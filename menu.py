@@ -1,44 +1,37 @@
+import json
 import os
-import re
 from datetime import datetime
 
-import fitz
 import requests
 
 token = os.environ["TELEGRAM_TOKEN"]
 chat_id = os.environ["TELEGRAM_CHAT_ID"]
 
-# Leer PDF
-texto = ""
+dia = str(datetime.now().day)
 
-pdf = fitz.open("menu_actual.pdf")
+with open("menu.json", encoding="utf-8") as f:
+    menus = json.load(f)
 
-for pagina in pdf:
-    texto += pagina.get_text() + "\n"
+if dia in menus:
+    menu = menus[dia]
 
-pdf.close()
+    mensaje = f"""🍽️ Menú del día {dia}
 
-# Día actual
-dia = datetime.now().day
+🥗 {menu['primero']}
 
-# Buscar desde el día actual hasta el siguiente día
-patron = rf"\b{dia}\b(.*?)(?=\n(?:{dia+1})\b|\Z)"
+🍖 {menu['segundo']}
 
-m = re.search(patron, texto, re.DOTALL)
-
-if m:
-    menu = m.group(1).strip()
+🍎 {menu['postre']}
+"""
 else:
-    menu = "No se ha encontrado el menú para hoy."
-
-mensaje = f"🍽️ Menú del día {dia}\n\n{menu}"
+    mensaje = f"No hay menú para el día {dia}"
 
 requests.post(
     f"https://api.telegram.org/bot{token}/sendMessage",
     json={
         "chat_id": chat_id,
-        "text": mensaje[:4000]
+        "text": mensaje
     }
 )
 
-print("Mensaje enviado")
+print(mensaje)
