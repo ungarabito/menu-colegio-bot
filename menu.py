@@ -13,6 +13,7 @@ with open("menu.json", encoding="utf-8") as f:
     menus = json.load(f)
 
 if dia in menus:
+
     menu = menus[dia]
 
     mensaje = f"""🍽️ Menú del día {dia}
@@ -20,9 +21,8 @@ if dia in menus:
 🥗 {menu['primero']}
 
 🍖 {menu['segundo']}
-
-🍎 {menu['postre']}
 """
+
 else:
     mensaje = f"No hay menú para el día {dia}"
 
