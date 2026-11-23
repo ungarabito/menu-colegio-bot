@@ -1,6 +1,6 @@
 import json
-import re
 import fitz
+import re
 
 pdf = fitz.open("menu_actual.pdf")
 
@@ -11,42 +11,44 @@ for pagina in pdf:
 
 pdf.close()
 
-# Limpiar espacios
-texto = re.sub(r"\r", "", texto)
-
 lineas = [
-    linea.strip()
-    for linea in texto.splitlines()
-    if linea.strip()
+    l.strip()
+    for l in texto.splitlines()
+    if l.strip()
 ]
 
 menus = {}
 
-i = 0
+dias_semana = [
+    "LUNES",
+    "MARTES",
+    "MIÉRCOLES",
+    "MIERCOLES",
+    "JUEVES",
+    "VIERNES"
+]
 
-while i < len(lineas):
+for i in range(len(lineas) - 2):
 
-    if re.fullmatch(r"\d{1,2}", lineas[i]):
-        dia = lineas[i]
+    linea = lineas[i]
 
-        bloque = []
-        i += 1
+    patron = r"^(LUNES|MARTES|MIÉRCOLES|MIERCOLES|JUEVES|VIERNES)\s+(\d+)$"
 
-        while (
-            i < len(lineas)
-            and not re.fullmatch(r"\d{1,2}", lineas[i])
-        ):
-            bloque.append(lineas[i])
-            i += 1
+    m = re.match(patron, linea)
 
-        menus[dia] = bloque
+    if m:
+        dia = m.group(2)
 
-        continue
+        primero = lineas[i + 1]
+        segundo = lineas[i + 2]
 
-    i += 1
+        menus[dia] = {
+            "primero": primero,
+            "segundo": segundo
+        }
 
 with open(
-    "menu_raw.json",
+    "menu.json",
     "w",
     encoding="utf-8"
 ) as f:
@@ -57,4 +59,4 @@ with open(
         ensure_ascii=False
     )
 
-print(f"Generados {len(menus)} días")
+print(json.dumps(menus, indent=2, ensure_ascii=False))
